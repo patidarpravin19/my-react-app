@@ -1,74 +1,98 @@
 import './App.css';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import Todos from './components/Todos';
-import AddTodo from './components/AddTodo';
-import About from './components/About';
-import { useState, useEffect } from 'react';
+import Header from "./MyComponents/Header";
+import { Todos } from "./MyComponents/Todos";
+import { Footer } from "./MyComponents/Footer";
+import { AddTodo } from "./MyComponents/AddTodo";
+import { About } from "./MyComponents/About";
+import FormValidation from "./MyComponents/FormValidation";
+import { CheckboxData } from "./Shared/CheckboxData"
+import APICall from "./Shared/APICall";
+import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
   Route
 } from "react-router-dom";
+import Checkbox from './Shared/Checkbox';
 
 function App() {
-
-  // let showSearchBar = false;
-  let initTodos = localStorage.getItem("todoList");
-  if (initTodos == null) initTodos = [];
-  else initTodos = JSON.parse(initTodos);
-
-  const addTodo = (title, description) => {
-    let id;
-    if (todoList.length === 0) {
-      id = 1;
-    }
-    else {
-      id = todoList[todoList.length - 1].id + 1;
-    }
-    let myTodo = {
-      id: id,
-      name: title,
-      description: description
-    }
-    setTodos([...todoList, myTodo]);
-    localStorage.setItem("todoList", JSON.stringify(todoList));
+  let initTodo;
+  if (localStorage.getItem("todos") === null) {
+    initTodo = [];
   }
+  else {
+    initTodo = JSON.parse(localStorage.getItem("todos"));
+  }
+
 
   const onDelete = (todo) => {
-    setTodos(todoList.filter((e) => {
+    console.log("I am ondelete of todo", todo);
+    // Deleting this way in react does not work
+    // let index = todos.indexOf(todo);
+    // todos.splice(index, 1);
+
+    setTodos(todos.filter((e) => {
       return e !== todo;
-    }))
-    localStorage.setItem("todoList", JSON.stringify(todoList));
+    }));
+    console.log("deleted", todos)
+    localStorage.setItem("todos", JSON.stringify(todos));
   }
 
-  const [todoList, setTodos] = useState(initTodos);
+  const addTodo = (title, desc) => {
+    console.log("I am adding this todo", title, desc)
+    let sno;
+    if (todos.length === 0) {
+      sno = 0;
+    }
+    else {
+      sno = todos[todos.length - 1].sno + 1;
+    }
+    const myTodo = {
+      sno: sno,
+      title: title,
+      desc: desc,
+    }
+    setTodos([...todos, myTodo]);
+    console.log(myTodo);
+  }
 
+  const [todos, setTodos] = useState(initTodo);
   useEffect(() => {
-    localStorage.setItem("todoList", JSON.stringify(todoList));
-  }, [todoList])
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos])
 
   return (
     <>
       <Router>
-        <Header title="My Title" />
+        <Header title="My Todos List" searchBar={false} />
         <Switch>
           <Route exact path="/" render={() => {
             return (
               <>
                 <AddTodo addTodo={addTodo} />
-                <Todos data={todoList} onDelete={onDelete} />
-              </>
-            )
+                <Todos todos={todos} onDelete={onDelete} />
+              </>)
           }}>
           </Route>
-          <Route exact path="/about">
+          <Route path="/about">
             <About />
           </Route>
+          <Route path="/from-validation">
+            <FormValidation />
+          </Route>
+          <Route path="/checkbox-list">
+            {CheckboxData.map((item, index) => {
+              return (
+                <Checkbox data={item} index={index} key={index} />
+              )
+            })}
+          </Route>
+          <Route path="/api-call">
+            <APICall />
+          </Route>
         </Switch>
+        <Footer />
       </Router>
-
-      <Footer />
     </>
   );
 }
